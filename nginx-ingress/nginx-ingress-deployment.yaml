@@ -368,6 +368,15 @@ spec:
         component: controller
     spec:
       dnsPolicy: ClusterFirst
+      initContainers:
+      - name: setsysctl
+        image: busybox
+        securityContext:
+          privileged: true
+        command:
+        - sh
+        - -c
+        - 'echo 32768 > /proc/sys/net/core/somaxconn; echo "1024 65000" > /proc/sys/net/ipv4/ip_local_port_range; echo 1 > /proc/sys/net/ipv4/tcp_tw_reuse; echo 5 > /proc/sys/net/ipv4/tcp_fin_timeout'
       containers:
         - name: nginx-ingress-controller
           image: "ccr.ccs.tencentyun.com/mirrors/nginx-ingress-controller:v0.34.1"
