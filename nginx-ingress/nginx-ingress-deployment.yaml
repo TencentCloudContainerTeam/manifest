@@ -295,23 +295,6 @@ metadata:
   labels:
     app: nginx-ingress
     component: controller
-  name: nginx-ingress-controller-metrics
-spec:
-  ports:
-    - name: metrics
-      port: 9913
-      targetPort: 9913
-  selector:
-    app: nginx-ingress
-    component: controller
-  type: "ClusterIP"
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: nginx-ingress
-    component: controller
   name: nginx-ingress-controller
 spec:
   ports:
