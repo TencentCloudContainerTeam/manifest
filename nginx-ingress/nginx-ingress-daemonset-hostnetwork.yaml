@@ -1,9 +1,26 @@
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-ingress-controller
+  namespace: nginx-ingress
+data:
+  # nginx 与 client 保持的一个长连接能处理的请求数量，默认 100，高并发场景建议调高。
+  # 参考: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#keep-alive-requests
+  keep-alive-requests: "10000"
+  # nginx 与 upstream 保持长连接的最大空闲连接数 (不是最大连接数)，默认 32，在高并发下场景下调大，避免频繁建连导致 TIME_WAIT 飙升。
+  # 参考: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#upstream-keepalive-connections
+  upstream-keepalive-connections: "200"
+  # 每个 worker 进程可以打开的最大连接数，默认 16384。
+  # 参考: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#max-worker-connections
+  max-worker-connections: "65536"
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
     app: nginx-ingress
   name: nginx-ingress
+  namespace: nginx-ingress
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -11,6 +28,7 @@ metadata:
   labels:
     app: nginx-ingress
   name: nginx-ingress-backend
+  namespace: nginx-ingress
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -74,7 +92,6 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app: nginx-ingress
-
   name: nginx-ingress
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -83,7 +100,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: nginx-ingress
-    namespace: kube-system
+    namespace: nginx-ingress
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -91,6 +108,7 @@ metadata:
   labels:
     app: nginx-ingress
   name: nginx-ingress
+  namespace: nginx-ingress
 rules:
   - apiGroups:
       - ""
@@ -171,6 +189,7 @@ metadata:
   labels:
     app: nginx-ingress
   name: nginx-ingress
+  namespace: nginx-ingress
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -178,7 +197,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: nginx-ingress
-  namespace: kube-system
+  namespace: nginx-ingress
 ---
 apiVersion: v1
 kind: Service
@@ -187,6 +206,7 @@ metadata:
     app: nginx-ingress
     component: controller
   name: nginx-ingress-controller-metrics
+  namespace: nginx-ingress
 spec:
   ports:
   - name: metrics
@@ -204,6 +224,7 @@ metadata:
     app: nginx-ingress
     component: default-backend
   name: nginx-ingress-default-backend
+  namespace: nginx-ingress
 spec:
   ports:
     - name: http
@@ -222,6 +243,7 @@ metadata:
     app: nginx-ingress
     component: controller
   name: nginx-ingress-controller
+  namespace: nginx-ingress
 spec:
   selector:
     matchLabels:
@@ -324,6 +346,7 @@ metadata:
     app: nginx-ingress
     component: default-backend
   name: nginx-ingress-default-backend
+  namespace: nginx-ingress
 spec:
   selector:
     matchLabels:
