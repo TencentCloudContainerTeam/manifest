@@ -237,8 +237,6 @@ metadata:
   labels:
     app: nginx-ingress
     component: controller
-  annotations:
-    service.kubernetes.io/qcloud-loadbalancer-internal-subnetid: "subnet-4k3fdq3f"
   name: nginx-ingress-controller
   namespace: nginx-ingress
 spec:
