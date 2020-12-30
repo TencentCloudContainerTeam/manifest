@@ -1,0 +1,98 @@
+global:
+  edition: ce # 使用完全开源版
+  hosts:
+    https: false # 集群内部不使用 https，若需要可根据环境在流量入口处加证书，比如单独维护 Ingress，在 Ingress 上加证书
+  certificates:
+    image:
+      repository: imroc.tencentcloudcr.com/gitlab/alpine-certificates
+      tag: 20191127-r2
+  kubectl:
+    image:
+      repository: imroc.tencentcloudcr.com/gitlab/kubectl
+      tag: 1.13.12
+  redis:
+    password:
+      enabled: true
+  ingress:
+    enabled: false # 不默认使用创建 Ingress，不同环境差异大，可能自动创建出来的用不了，需要的话可根据自身环境单独维护 Ingress
+    configureCertmanager: false
+    tls:
+      enabled: false
+
+certmanager:
+  install: false # 不安装 cert-manager，证书建议单独维护
+nginx-ingress:
+  enabled: false # 不默认发布 Ingress，对外暴露服务可单独维护
+prometheus:
+  install: false # 不安装 prometheus，监控可使用云原生监控(托管Prometheus，需开白)
+gitlab-runner:
+  install: false # 不安装 gitlab-runner，需要的话，建议单独安装，通过内部的 svc 地址注册上去(用默认生成的外部域名地址通常访问不通，注册不上)
+
+redis: # 测试时，为了方便先安装依赖的 redis (https://docs.gitlab.com/charts/installation/deployment.html#redis)
+  install: true # 生产不建议使用这里的默认安装 redis，可使用云上专业的 redis 产品
+  usePassword: true
+  password: "123456"
+  cluster:
+    enabled: false
+  master:
+    persistence:
+      size: 10Gi
+
+postgresql: # 测试时，为了方便先安装依赖的 postgresql (https://docs.gitlab.com/charts/installation/deployment.html#postgresql)
+  install: true # 生产不建议使用这里的默认安装 postgresql，可使用云上专业的 postgresql 产品
+  postgresqlUsername: gitlab
+  postgresqlPostgresPassword: "123456"
+  persistence:
+    size: 10Gi
+
+registry:
+  enabled: false
+  ingress:
+    enabled: false
+  image:
+    repository: imroc.tencentcloudcr.com/gitlab/gitlab-container-registry
+    tag: 'v2.12.0-gitlab'
+
+shared-secrets:
+  selfsign:
+    image:
+      repository: imroc.tencentcloudcr.com/gitlab/cfssl-self-sign
+      tag: 1.2
+
+gitlab:
+  gitlab-exporter:
+    image:
+      repository: imroc.tencentcloudcr.com/gitlab/gitlab-exporter
+      tag: 7.1.2
+  gitaly:
+    image:
+      repository: imroc.tencentcloudcr.com/gitlab/gitaly
+      tag: v13.7.1
+  gitlab-shell:
+    image:
+      repository: imroc.tencentcloudcr.com/gitlab/gitlab-shell
+      tag: v13.14.0
+  task-runner:
+    image:
+      repository: imroc.tencentcloudcr.com/gitlab/gitlab-task-runner-ce
+      tag: v13.7.1
+  migrations:
+    image:
+      repository: imroc.tencentcloudcr.com/gitlab/gitlab-task-runner-ce
+      tag: v13.7.1
+  sidekiq:
+    image:
+      repository: imroc.tencentcloudcr.com/gitlab/gitlab-sidekiq-ce
+      tag: v13.7.1
+  webservice:
+    image:
+      repository: imroc.tencentcloudcr.com/gitlab/gitlab-webservice-ce
+      tag: v13.7.1
+    workhorse:
+      image: imroc.tencentcloudcr.com/gitlab/gitlab-workhorse-ce
+      tag: v13.7.1
+    ingress:
+      enabled: false # 不默认创建 ingress，建议 Ingress 单独维护
+    service:
+      type: LoadBalancer # 使用四层 LB 暴露
+      workhorseExternalPort: 8088 # gitlab 界面对外端口号
